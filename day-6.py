@@ -65,11 +65,11 @@ def travel_up(row, column):
     current_col = column
     while not left_area(current_row, current_col) and input[current_row][current_col] != "#":
         loops_on_this_row = 0
-        visited_row = row
-        while visited_row < len(visited) and loops_on_this_row == 0:
-            if "down" in visited[visited_row][column]:
+        visited_col = column
+        while visited_col < len(visited[0]) and loops_on_this_row == 0:
+            if "right" in visited[row][visited_col]:
                 loops_on_this_row += 1
-            visited_row += 1
+            visited_col += 1
         if "up" in visited[current_row][current_col]:
             return [current_row, current_col, "loop"]
         visited[current_row][current_col].append("up")
