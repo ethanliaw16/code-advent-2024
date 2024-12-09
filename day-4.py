@@ -117,10 +117,11 @@ width = len(input[0])
 height = len(input)
 
 print(f"w {width} l {height}")
-#for y in range(len(input)):
-#    for x in range(len(input[0])):
-#        i += num_xmas(y, x, input, height, width)
+for y in range(len(input)):
+    for x in range(len(input[0])):
+        i += num_xmas(y, x, input, height, width)
 
+print(f"{i} xmas total day 1")
 i = 0
 for y in range(len(input) - 2):
     for x in range(len(input) - 2):
