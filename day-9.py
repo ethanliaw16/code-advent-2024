@@ -3,6 +3,7 @@ import sys
 input = {}
 files = {}
 free_spaces = []
+
 def handle(line):
     if line != "":
         id = 0
@@ -21,8 +22,8 @@ def handle(line):
                     free_spaces.append(pos + j)
             pos += current_char
         print(f"last pos is {pos} highest id is {max(files.keys())}")
-        print(files)
-        print(free_spaces)
+        #print(files)
+        #print(free_spaces)
 
 lastline='a'
 
@@ -57,7 +58,6 @@ def is_contiguous(lst):
 
 def enough_space_left(end, size, spaces):
     current = 0
-    current_spaces = []
     while current < len(spaces) - 1 and spaces[current] < end:
         if current + size > len(spaces) - 1:
             return [False, []]
@@ -76,7 +76,39 @@ with open('day-9-input.txt', 'r') as file:
     handle(line_without_newline(input_str))
     current_rightmost_id = max(files.keys())
     free_spaces.sort()
-    
+    while(free_spaces[0] < highest_file_index()) and current_rightmost_id >= 0:
+        right_most_file = files[current_rightmost_id]
+        new_file = []
+        for block in right_most_file:
+            next_space = free_spaces[0]
+            if next_space < block:
+                new_file.append(free_spaces.pop(0))
+                free_spaces.sort()
+                if block not in free_spaces:
+                    free_spaces.append(block)
+            else:
+                new_file.append(block)
+        
+        files[current_rightmost_id] = new_file
+        current_rightmost_id -= 1
+    rev_files = reverse_files(files)
+    block_indices = [n for n in rev_files.keys()]
+    block_indices.sort()
+    answer = 0
+    compressed = ""
+    for i in block_indices:
+        answer += i * rev_files[i]
+        #print(f"{i}\t{rev_files[i]}")
+        #compressed += str(rev_files[i])
+    print(f"part 1 {answer}")
+
+    #----------------Part 2----------------
+    files = {}
+    free_spaces = []
+    handle(line_without_newline(input_str))
+    current_rightmost_id = max(files.keys())
+    free_spaces.sort()
+
     while(current_rightmost_id >= 0):
         #print(f"rightmost {current_rightmost_id}")
         right_most_file = files[current_rightmost_id]
@@ -104,7 +136,7 @@ with open('day-9-input.txt', 'r') as file:
         answer += i * rev_files[i]
         #print(f"{i} {rev_files[i]}")
         
-    print(answer)
+    print(f"part 2 {answer}")
         
 
 
