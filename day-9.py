@@ -1,4 +1,5 @@
 import sys
+import time
 
 input = {}
 files = {}
@@ -70,6 +71,7 @@ def enough_space_left(end, size, spaces):
 
 
 with open('day-9-input.txt', 'r') as file:
+    start_time = time.time()
     # Read the entire contents of the file as a string
     input_str = file.read()
     #input_str = "2333133121414131402n"
@@ -101,6 +103,10 @@ with open('day-9-input.txt', 'r') as file:
         #print(f"{i}\t{rev_files[i]}")
         #compressed += str(rev_files[i])
     print(f"part 1 {answer}")
+    day_1_time = time.time()
+    day_1_execution_time = day_1_time - start_time
+    print(f"Execution time: {day_1_time:.6f} seconds")
+
 
     #----------------Part 2----------------
     files = {}
@@ -137,6 +143,9 @@ with open('day-9-input.txt', 'r') as file:
         #print(f"{i} {rev_files[i]}")
         
     print(f"part 2 {answer}")
+    end_time = time.time()
+    execution_time = end_time - day_1_time
+    print(f"Execution time: {execution_time:.6f} seconds")
         
 
 
