@@ -27,13 +27,22 @@ for line in sys.stdin:
         lastline = line[:-1]
 
 good_input = []
-i = 0
-
 
 def num_instances(target, list):
     return len([x for x in list if x == target])
 
-while i < len(left):
+left_1 = left
+right_1 = right
+
+left_1.sort()
+right_1.sort()
+answer = 0
+for i in range(len(left)):
+    answer += abs(left_1[i] - right_1[i])
+
+print(answer)
+
+for i in range(len(left)):
     good_input.append([left[i], right[i]])
     i += 1
 

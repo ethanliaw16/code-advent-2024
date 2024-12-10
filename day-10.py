@@ -59,13 +59,13 @@ def can_reach(start_r, start_c, end_r, end_c, visited):
     visited.append(current)
     paths = [x for x in possible_steps(current[0], current[1]) if x not in visited]
     if len(paths) == 0:
-        return False
-    results_of_paths = []
+        return 0
+    results_of_paths = 0
     for path in paths:
         if path == [end_r, end_c]:
-            return True
-        results_of_paths.append(can_reach(path[0], path[1], end_r, end_c, visited))
-    return True in results_of_paths
+            return 1
+        results_of_paths += can_reach(path[0], path[1], end_r, end_c, visited)
+    return results_of_paths > 0
 
 
 

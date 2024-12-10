@@ -1,8 +1,14 @@
 import sys
 import time
 
-input = {}
+#files keys are ID's
+#vals are lists of blocks for the respective file id
+#input 234 -> 00...1111 -> files are:
+#(0) -> [0, 1]
+#(1) -> [5,6,7,8]
 files = {}
+
+#list of blocks not currently used
 free_spaces = []
 
 def handle(line):
@@ -28,6 +34,18 @@ def handle(line):
 
 lastline='a'
 
+def insert_in_order(new_elem, list):
+    #print(f"insert {new_elem} into {list}")
+    inserted = False
+    for elem in list:
+        if new_elem < elem:
+            inserted = True
+            list.insert(list.index(elem), new_elem)
+            return list
+    if not inserted:
+        list.append(new_elem)
+    return list
+
 def highest_file_index():
     current_max = 0
     for file in files:
@@ -37,12 +55,12 @@ def highest_file_index():
 def line_without_newline(line):
     return line[:-1]
 
-def reverse_files(files):
-    rev_files = {}
+def checksum(files):
+    answer = 0
     for key in files:
         for item in files[key]:
-            rev_files[item] = key
-    return rev_files
+            answer += key * item
+    return answer
 
 def is_contiguous(lst):
     # Check if the list has fewer than two elements (cannot check difference)
@@ -56,7 +74,9 @@ def is_contiguous(lst):
 
     return True    
 
-
+#check for the presence of a contiguous set of block indices of length <size> 
+#whose highest index is less than (to the left of) <end>, starting at the left-most (assume <spaces> is sorted)
+#return [true, [<existing contiguous blocks>]] if found otherwise [False, empty]
 def enough_space_left(end, size, spaces):
     current = 0
     while current < len(spaces) - 1 and spaces[current] < end:
@@ -69,43 +89,51 @@ def enough_space_left(end, size, spaces):
 
     return [False, []]
 
-
+#Pasting in terminal cuts off input, so had to read from a file.
 with open('day-9-input.txt', 'r') as file:
     start_time = time.time()
     # Read the entire contents of the file as a string
     input_str = file.read()
     #input_str = "2333133121414131402n"
     handle(line_without_newline(input_str))
+
+    
     current_rightmost_id = max(files.keys())
     free_spaces.sort()
-    while(free_spaces[0] < highest_file_index()) and current_rightmost_id >= 0:
+
+    while(free_spaces[0] < highest_file_index()):
         right_most_file = files[current_rightmost_id]
         new_file = []
+    
+        #The instructions indicated that the right most file's blocks should get moved
+        #starting from right to left. This approach went left-to-right. However, 
+        #the result is the same: 
+        #case 1: there was enough free space to the left of the file that every block 
+        #of the file got moved -> same spaces are occupied and un-occupied in both cases.
+        #case 2: there was only enough left-hand space for part of the file. Then, 
+        #The remainder of the file will move to the free space that is created when the left-hand blocks
+        #of the file when they were moved to free space. 
         for block in right_most_file:
             next_space = free_spaces[0]
             if next_space < block:
                 new_file.append(free_spaces.pop(0))
-                free_spaces.sort()
                 if block not in free_spaces:
                     free_spaces.append(block)
+                    free_spaces.sort()
             else:
                 new_file.append(block)
-        
+    
         files[current_rightmost_id] = new_file
         current_rightmost_id -= 1
-    rev_files = reverse_files(files)
-    block_indices = [n for n in rev_files.keys()]
-    block_indices.sort()
-    answer = 0
-    compressed = ""
-    for i in block_indices:
-        answer += i * rev_files[i]
-        #print(f"{i}\t{rev_files[i]}")
-        #compressed += str(rev_files[i])
+        #I haven't been able to confirm this, but it appears that because the maximum possible 
+        #contiguous free space to the left of a file must be 9 or less, all free spaces will be 
+        # moved to the far right-hand side before all files have been (un)de-fragged. 
+        #otherwise this would not work. 
+    answer = checksum(files)
     print(f"part 1 {answer}")
     day_1_time = time.time()
     day_1_execution_time = day_1_time - start_time
-    print(f"Execution time: {day_1_time:.6f} seconds")
+    print(f"Execution time: {day_1_execution_time:.6f} seconds")
 
 
     #----------------Part 2----------------
@@ -122,7 +150,6 @@ with open('day-9-input.txt', 'r') as file:
         check_for_left_space = enough_space_left(right_most_file[0], right_file_size, free_spaces)
         if check_for_left_space[0]:
             target_blocks = check_for_left_space[1]
-            #print(f"{current_rightmost_id} can be moved to {target_blocks}")
             for block in target_blocks:
                 free_spaces.remove(block)
             new_file = []
@@ -132,16 +159,7 @@ with open('day-9-input.txt', 'r') as file:
             files[current_rightmost_id] = new_file
         current_rightmost_id -= 1
     
-    rev_files = reverse_files(files)
-    #print(files)
-    #print(free_spaces)
-    block_indices = [n for n in rev_files.keys()]
-    block_indices.sort()
-    answer = 0
-    for i in block_indices:
-        answer += i * rev_files[i]
-        #print(f"{i} {rev_files[i]}")
-        
+    answer = checksum(files)
     print(f"part 2 {answer}")
     end_time = time.time()
     execution_time = end_time - day_1_time
