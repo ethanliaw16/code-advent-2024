@@ -101,6 +101,8 @@ with open('day-9-input.txt', 'r') as file:
     current_rightmost_id = max(files.keys())
     free_spaces.sort()
 
+    #Continue until all the spaces are contiguous on the right-hand side of the disc
+    #i.e. the left most  free space is right of the right-most file block. 
     while(free_spaces[0] < highest_file_index()):
         right_most_file = files[current_rightmost_id]
         new_file = []
@@ -118,6 +120,9 @@ with open('day-9-input.txt', 'r') as file:
             if next_space < block:
                 new_file.append(free_spaces.pop(0))
                 if block not in free_spaces:
+                    #For some reason that is currently beyond me, it is faster to do this 
+                    #than to insert the free space in the correct in-order position. 
+                    #most likely to do with my laziness. 
                     free_spaces.append(block)
                     free_spaces.sort()
             else:
@@ -143,8 +148,9 @@ with open('day-9-input.txt', 'r') as file:
     current_rightmost_id = max(files.keys())
     free_spaces.sort()
 
+    #Essentially the same as 1, but with a check that a big enough contiguous gap exists
+    #before the move.
     while(current_rightmost_id >= 0):
-        #print(f"rightmost {current_rightmost_id}")
         right_most_file = files[current_rightmost_id]
         right_file_size = len(right_most_file)
         check_for_left_space = enough_space_left(right_most_file[0], right_file_size, free_spaces)
