@@ -43,14 +43,7 @@ print(f"start at row {start_row} col {start_col}")
 def travel_right(row, column):
     current_row = row
     current_col = column
-    num_loops_on_this_travel =0
     while not left_area(current_row, current_col) and input[current_row][current_col] != "#":
-        loops_on_this_column = 0
-        visited_row = row
-        while visited_row < len(visited) and loops_on_this_column == 0:
-            if "down" in visited[visited_row][column]:
-                loops_on_this_column += 1
-            visited_row += 1
         if "right" in visited[current_row][current_col]:
             return [current_row, current_col, "loop"]
         visited[current_row][current_col].append("right")
@@ -58,18 +51,12 @@ def travel_right(row, column):
             return [current_row, current_col + 1]
         current_col += 1
     current_col -= 1
-    return [current_row, current_col, num_loops_on_this_travel]
+    return [current_row, current_col]
 
 def travel_up(row, column):
     current_row = row
     current_col = column
     while not left_area(current_row, current_col) and input[current_row][current_col] != "#":
-        loops_on_this_row = 0
-        visited_col = column
-        while visited_col < len(visited[0]) and loops_on_this_row == 0:
-            if "right" in visited[row][visited_col]:
-                loops_on_this_row += 1
-            visited_col += 1
         if "up" in visited[current_row][current_col]:
             return [current_row, current_col, "loop"]
         visited[current_row][current_col].append("up")

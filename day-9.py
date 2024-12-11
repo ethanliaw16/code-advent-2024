@@ -158,11 +158,10 @@ with open('day-9-input.txt', 'r') as file:
             target_blocks = check_for_left_space[1]
             for block in target_blocks:
                 free_spaces.remove(block)
-            new_file = []
+                
             for block in right_most_file:
-                new_file.append(target_blocks.pop(0))
                 free_spaces.append(max(free_spaces) + 1)
-            files[current_rightmost_id] = new_file
+            files[current_rightmost_id] = target_blocks
         current_rightmost_id -= 1
     
     answer = checksum(files)
