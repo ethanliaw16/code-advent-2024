@@ -1,14 +1,53 @@
 import sys
-from scipy.spatial import ConvexHull
+
+#Something I was considering after gpt suggested it. 
+#however  I forgot to convey in the prompt that a field is not necessarily convex so Convexhull doesn't work. 
+#from scipy.spatial import ConvexHull
 
 input = []
 visited = []
 fields = []
 
+#To get the Fields: for each square on the plot, find the next square that hasn't yet been visited or assigned to a field,
+# and make it its own new field. Take each of its valid (in-bounds and unused) neighbors and queue them up to add to the field
+# and subsequently queue up its neighbors and so on. Field is completed when the queue of neighbors runs empty. 
+
+#Area is just the size of the list of points representing the field.
+#To get the perimeter, take every point in the field, and look at its N,S,E,W neighbors. 
+#For each neighbor, if the neighbor is OB or not the same veg as the field then add 1 to the perimeter. 
+
+#To get the number of sides, take vertical and horizontal slices of the field. For each slice,
+#Check how many contiguous segments are present on that row/column which consist of the field's edge squares 
+# An edge square is (any square who yielded more than 0 in the perimeter  calculation earlier)
+#The total count of segments formed by edge squares that lie on all horizontal and vertical slices is the number of sides for the field.
+
+#Caveat with this method: You need to be able to account for a square being both a left- and right- edge for vertical slice,
+#and both a top- or bottom- edge for a horizontal slice. At first I couldn't think of a way to check which that it was
+#without writing something really crude and messy. Eventually, I resorted to eliminating that  possibility by scaling the original 
+# map size up by 3x. With the scaled up Map, a single square that had two edges previously now becomes a 3x3 region, so the 
+# edge cannot be both top/bottom or right/left.  Additionally,  there are no more 1-length segments, so you only need to consider 
+#segments lying on the slice that are greater than 1. *This is mind-numbingly slow and definitely not the right way to go about 
+#reconciling a problem as small as this.
+#
+#The final solve uses the originally scaled map, and for each field keeps a dictionary to handle the edges.
+#Keys are the direction relative to the point that the fence is positioned, i.e. Top, bottom, left, right. Values are lists 
+#of the field's edge points which have the neighbor property. 
+# 
+# So in the example below, the the square at "a" results in the entry {"Top"->[1,2]} since it is a border from its top side.
+##.01234
+#0......
+#1..AaA.
+#2..AAA.
+#3..AAA.
+#4......
+
+#Using the dictionary mapping what kind of edge each point is, run through each horizontal and vertical slice twice, 
+#We collect segments that lie on that row/column for both the left/right edges and the top/right edges independently. 
+
 big_input = []
 
+#for iteration purposes. used 600 due to needing to use this for the scaled up map.
 def field_max_min(field):
-    #print(f"get max-min for {field}")
     min_x = 600
     max_x = 0
     min_y = 600
@@ -18,8 +57,6 @@ def field_max_min(field):
         max_x = max(max_x, point[1])
         min_y = min(min_y, point[0])
         max_y = max(max_y, point[0])
-        #print(f"max_y is {max_y} after {point[0]}")
-    #print(f"dims are {[min_y, min_x, max_y, max_x]}")
     return [min_y, min_x, max_y, max_x]
 
 def get_vert_segments(points, edge_dict, column):
@@ -213,19 +250,13 @@ def get_perimeter(field):
     num_sides_for_field = 0
     i = row_min
 
-    #print(f"{veg} edges {edges}")
-    #print(f"row max {row_max}")
-    #print(f"get horizontals")
     while i <= row_max:
         num_sides_for_field += get_horizontal_segments(edge_squares, edges, i)
         i += 1
-    #    
-    #print(f"get verticals")
     j = col_min
     while j <= col_max:
         num_sides_for_field += get_vert_segments(edge_squares, edges, j)
         j += 1
-    #print(f"{veg} has {num_sides_for_field} sides")
     return [perimeter, num_sides_for_field]
 
 def get_edge(point, edges):
@@ -240,6 +271,7 @@ def get_edge(point, edges):
         edge.append("left")
     return edge
 
+#Initial attempt to do edge cases fast -> any field made by a set of colinear points is always a quadrilateral
 def co_linear(field):
     vertical = True
     i = 0
@@ -258,7 +290,7 @@ def co_linear(field):
 
     return [next[0] - current[0], next[1] - current[1]]
 
-    
+#Originally used for perimeter calculation. 
 def is_edge(row, col, veg):
     if not in_bounds(row, col):
         return False
@@ -267,6 +299,8 @@ def is_edge(row, col, veg):
             return True
     return False
 
+
+#Iteration to get fields
 for i in range(len(input)):
     for j in range(len(input[0])):
         if [i,j] not in visited:
@@ -279,6 +313,9 @@ for field in fields:
     answer += len(field) * border_calc[0]
     answer_2 += len(field) * border_calc[1]
 
+
+#Everything past this point was either for trying other methods (walking the perimeter and counting direction changes)
+#or for doing the initial approach on the big-scaled map. 
 print(answer)
 print(answer_2)
 
@@ -288,6 +325,10 @@ temp_input = input
 input = big_input
 max_row = len(input) - 1
 max_col = len(input[0]) - 1
+
+
+#Biggest time loss. Organizing the islands was done iteratively with queue so that stack depth wouldn't be an issue,
+# but the 3x length and width made this take at least a minute or 2.  
 
 #print(f"generating big fields")
 #for i in range(len(input)):
@@ -301,11 +342,12 @@ max_col = len(input[0]) - 1
 #    print(f"{field}\n")
 #print("\n")            
 
-
+#Needed to match the area of the small field to the number of sides on the big field, so used this to match them together.
 def get_big_field(row, col):
     target_point = [row * 3, col * 3]
     return next((x for x in big_fields if target_point in x), None)
 
+#Debugging the scaled up map
 def print_big():
     for row in big_input:
         str = ""
