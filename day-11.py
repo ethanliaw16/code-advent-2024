@@ -47,7 +47,6 @@ def get_resulting_from_stone_iter(start_stone, num_iter):
                     else:
                         new_stone_counts[rule_result] = num_of_current_stone
         stone_counts = new_stone_counts
-        #debug_stones(stone_counts_copy)
     return sum(stone_counts_copy.values())
     
 

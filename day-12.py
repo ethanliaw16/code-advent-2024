@@ -287,9 +287,6 @@ def co_linear(field):
         i += 1
     return vertical or horizontal
     
-
-    return [next[0] - current[0], next[1] - current[1]]
-
 #Originally used for perimeter calculation. 
 def is_edge(row, col, veg):
     if not in_bounds(row, col):
